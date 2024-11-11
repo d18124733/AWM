@@ -1,8 +1,6 @@
 # AWM CA1
 
-**Website:** https://dfegan.xyz/login/ 
-
-(click 'sign up here' and make account before logging into website)
+**Website:** https://dfegan.xyz/login/ *(click 'sign up here' and make account before logging into website)*
 
 
 
