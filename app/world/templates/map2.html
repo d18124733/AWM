@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Location Details {% endblock %}
+{% block content %}
+    <div id="map" style="height: 400px;"></div>
+    <button onclick="updateLocation()">Update Location</button>
+
+    <script>
+        var map;
+        var marker = null;
+        var circle = null;
+
+        {% if location %}
+            map = L.map('map').setView([{{ location.y }}, {{ location.x }}], 13);
+            marker = L.marker([{{ location.y }}, {{ location.x }}]).addTo(map)
+                .bindPopup('<b>{{ user.username }}</b><br />')
+                .openPopup();
+        {% else %}
+            map = L.map('map').setView([0, 0], 2); 
+            console.log("No saved location found; showing world map.");
+        {% endif %}
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        function updateMap(latitude, longitude, accuracy) {
+            if (marker) {
+                map.removeLayer(marker);
+            }
+            if (circle) {
+                map.removeLayer(circle);
+            }
+
+            marker = L.marker([latitude, longitude]).addTo(map); 
+            circle = L.circle([latitude, longitude], { radius: accuracy }).addTo(map);
+            map.setView([latitude, longitude], 13);
+
+            console.log("Map updated to new position:", latitude, longitude, "with accuracy:", accuracy);
+        }
+
+        function updateLocation() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        var latitude = position.coords.latitude;
+                        var longitude = position.coords.longitude;
+                        var accuracy = position.coords.accuracy;
+
+                        updateMap(latitude, longitude, accuracy);
+
+                        fetch('{% url "update_location" %}', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: 'latitude=' + latitude + '&longitude=' + longitude
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                console.log('Location updated successfully');
+                            } else {
+                                console.error('Error updating location');
+                            }
+                        })
+                        .catch(error => console.error("Fetch error:", error));
+                    },
+                    function(error) {
+                        console.error('Error getting location:', error);
+                    }
+                );
+            } else {
+                console.error('Geolocation is not supported by this browser.');
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            console.log("DOM fully loaded. Initializing map...");
+            {% if location %}
+                updateMap({{ location.y }}, {{ location.x }}, 100); 
+            {% endif %}
+        });
+    </script>
+{% endblock %}

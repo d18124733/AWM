@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block title %}Map of Pubs and User Location{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row">
+        <div class="col text-center">
+            <h1 class="display-5">Ireland Amenities</h1>
+            <p class="text-muted">Places to eat and drink</p>
+        </div>
+    </div>
+
+    <!-- Map Section -->
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10">
+            <div class="card shadow">
+                <div class="card-body p-0">
+                    <div id="map" style="height: 400px; width: 100%;"></div>
+                </div>
+                <div class="card-footer text-center">
+                    <button onclick="updateLocation()" class="btn btn-primary btn-sm mt-2">
+                        Update Location
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 text-center">
+            <div id="legend" class="mb-3">
+                <h5></h5>
+                <span>
+                    <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png" style="width: 20px; vertical-align: middle;"> You
+                </span>
+                <span>
+                    <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png" style="width: 20px; vertical-align: middle;"> Pubs
+                </span>
+                <span class="ms-3">
+                    <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png" style="width: 20px; vertical-align: middle;"> Cafes
+                </span>
+                <span class="ms-3">
+                    <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png" style="width: 20px; vertical-align: middle;"> Restaurants
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<!-- Leaflet.markercluster Plugin -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+<script id="amenities-data" type="application/json">
+    {{ amenities|json_script:"amenities_data" }}
+</script>
+<script>
+    var map;
+    var marker = null, circle = null;
+
+    var irelandBounds = [[51.3, -10.5], [55.5, -5.5]]; 
+
+    map = L.map('map', {
+        center: [53.0, -8.0],
+        zoom: 7, 
+        maxBounds: irelandBounds, 
+        maxBoundsViscosity: 1.0 
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 18, 
+        minZoom: 6 
+    }).addTo(map);
+
+    var markers = L.markerClusterGroup({
+        disableClusteringAtZoom: 17 
+    });
+
+    var amenities = {{ amenities|safe }};  
+
+    const redIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+        iconSize: [25, 41], 
+        iconAnchor: [12, 41], 
+        popupAnchor: [1, -34], 
+        shadowSize: [41, 41] 
+    });
+
+    const greenIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    const blueIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+    amenities.forEach(function(amenity) {
+        let icon;
+        if (amenity.amenity === 'pub') {
+            icon = redIcon; 
+        } else if (amenity.amenity === 'restaurant') {
+            icon = blueIcon; 
+        } else if (amenity.amenity === 'cafe') {
+            icon = greenIcon; 
+        } else {
+            icon = L.icon({
+                iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+                shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            }); 
+        }
+        var amenityMarker = L.marker([amenity.latitude, amenity.longitude], { icon: icon });
+        amenityMarker.bindPopup('<b>' + amenity.name + '</b><br>' + amenity.amenity);
+        markers.addLayer(amenityMarker); 
+    });
+
+    map.addLayer(markers);
+
+    function updateMap(latitude, longitude, accuracy) {
+        if (marker) map.removeLayer(marker);
+        if (circle) map.removeLayer(circle);
+
+        marker = L.marker([latitude, longitude]).addTo(map);
+        circle = L.circle([latitude, longitude], { radius: accuracy }).addTo(map);
+        map.setView([latitude, longitude], 13); 
+    }
+
+    function updateLocation() {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    var latitude = position.coords.latitude;
+                    var longitude = position.coords.longitude;
+                    var accuracy = position.coords.accuracy;
+
+                    updateMap(latitude, longitude, accuracy);
+
+                    fetch('{% url "update_location" %}', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: 'latitude=' + latitude + '&longitude=' + longitude
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            console.log('Location updated successfully.');
+                        } else {
+                            console.error('Error updating location.');
+                        }
+                    })
+                    .catch(error => console.error("Fetch error:", error));
+                },
+                function (error) {
+                    console.error('Error getting location:', error);
+                }
+            );
+        } else {
+            console.error('Geolocation is not supported by this browser.');
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        console.log("Map initialized.");
+    });
+</script>
+{% endblock %}

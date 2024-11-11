@@ -1,0 +1,3 @@
+postgres_data/
+pgadmin/
+secret_key.txt
