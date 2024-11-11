@@ -1,6 +1,6 @@
-Video demo: https://youtu.be/lXY2hGGHGug
+**Video demo:* https://youtu.be/lXY2hGGHGug
 
-Website: https://dfegan.xyz/login/ (click sign up and make account before logging in)
+**Website:** https://dfegan.xyz/login/ (click sign up and make account before logging in)
 
 
 CA1 for advanced web mapping.
