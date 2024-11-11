@@ -4,7 +4,7 @@
 
 **Website:** https://dfegan.xyz/login/ 
 
-(click sign up and make account before logging into website)
+(click 'sign up here' and make account before logging into website)
 
 
 
