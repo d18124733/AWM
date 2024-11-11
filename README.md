@@ -1,7 +1,5 @@
 # AWM CA1
 
-**Video demo:** https://youtu.be/lXY2hGGHGug
-
 **Website:** https://dfegan.xyz/login/ 
 
 (click 'sign up here' and make account before logging into website)
