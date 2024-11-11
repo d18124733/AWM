@@ -18,7 +18,7 @@ You will also need to load the world/data/export.json using load_amenities.py. T
 4. Open the python shell:
    > python manage.py shell
 
-5. And finaly in the python shell run:
+5. And finally in the python shell run:
    > from world import load_amenities
    
    > load_amenities.run()
