@@ -2,11 +2,6 @@
 
 **Video Demo:** https://youtu.be/3cVRTdIpodM
 
-**Website:** https://dfegan.xyz/login/ 
-
-*(click 'sign up here' and make account before logging into website)*
-
-
 
 The relevant app folder is 'world' and the html file in 'world/templates/map.html' is the focus feature of the website.
 
