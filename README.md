@@ -3,7 +3,8 @@
 **Video demo:** https://youtu.be/lXY2hGGHGug
 
 **Website:** https://dfegan.xyz/login/ 
-(click sign up and make account before logging inTwebsite)
+
+(click sign up and make account before logging into website)
 
 
 
