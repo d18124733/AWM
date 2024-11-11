@@ -12,7 +12,7 @@ The relevant app folder is 'world' and the html file in 'world/templates/map.htm
 
 You will need to add a file called 'secret_key.txt' in the root directory of this project to run this locally.
 
-You will also need to load the export.json using load_amenities.py. To do this and get the app running on your machine:
+You will also need to load the dataset into postgis using load_amenities.py. To do this and get the app running on your machine:
 
 1. Start all containers by running:
    > docker-compose up --build
