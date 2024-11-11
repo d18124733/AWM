@@ -1,9 +1,10 @@
+# AWM CA1
+
 **Video demo:** https://youtu.be/lXY2hGGHGug
 
 **Website:** https://dfegan.xyz/login/ (click sign up and make account before logging in)
 
 
-CA1 for advanced web mapping.
 
 The relevant app folder is 'world' and the html file in 'world/templates/map.html' is the focus feature of the website.
 
