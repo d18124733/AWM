@@ -1,4 +1,4 @@
-# Advanced Web Mapping Project
+# Advanced Web Mapping
 
 For the Django app, the relevant application folder is 
 > /app/world
