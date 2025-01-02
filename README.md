@@ -9,7 +9,7 @@ and the Javascript logic for the application is stored in
 For the React App, the relevant folder is called
 > /React
 
-You will need to add a file called 'secret_key.txt' in the root directory of this project to run this locally.
+You will need to add a file called 'secret_key.txt' in the /app directory to run this locally.
 
 You will also need to load the dataset into postgis using load_amenities.py. To do this and get the app running on your machine:
 
