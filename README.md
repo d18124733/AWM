@@ -1,9 +1,13 @@
-# AWM CA1
+# Advanced Web Mapping Project
 
-**Video Demo:** https://youtu.be/3cVRTdIpodM
+For the Django app, the relevant application folder is 
+> /app/world
 
+and the Javascript logic for the application is stored in 
+> /app/static/mapScript.js
 
-The relevant app folder is 'world' and the html file in 'world/templates/map.html' is the focus feature of the website.
+For the React App, the relevant folder is called
+> /React
 
 You will need to add a file called 'secret_key.txt' in the root directory of this project to run this locally.
 
