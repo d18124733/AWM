@@ -1,8 +1,10 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Map of Pubs and User Location{% endblock %}
 
 {% block content %}
+
 <div class="container mt-4">
     <!-- Header -->
     <div class="row">
@@ -28,26 +30,82 @@
         </div>
     </div>
 
+    <!-- Legend -->
     <div class="row justify-content-center">
         <div class="col-12 col-md-10 text-center">
             <div id="legend" class="mb-3">
                 <h5></h5>
                 <span>
-                    <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png" style="width: 20px; vertical-align: middle;"> You
+                    <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png" style="width: 20px; vertical-align: middle;"> You
                 </span>
                 <span>
-                    <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png" style="width: 20px; vertical-align: middle;"> Pubs
+                    <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png" style="width: 20px; vertical-align: middle;"> Pubs
                 </span>
                 <span class="ms-3">
-                    <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png" style="width: 20px; vertical-align: middle;"> Cafes
+                    <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-gold.png" style="width: 20px; vertical-align: middle;"> Restaurants
                 </span>
                 <span class="ms-3">
-                    <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png" style="width: 20px; vertical-align: middle;"> Restaurants
+                    <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png" style="width: 20px; vertical-align: middle;"> Cafes
+                </span>
+                <span class="ms-3">
+                    <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png" style="width: 20px; vertical-align: middle;"> Bars
+                </span>
+                <span class="ms-3">
+                    <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png" style="width: 20px; vertical-align: middle;"> Fast Food
                 </span>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Filters -->
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-10 text-center">
+            <div id="filter-options" class="mb-4">
+                <h5>Filter Amenities</h5>
+                <form id="filter-form">
+                    <label>
+                        <input type="checkbox" name="amenity" value="pub"> Pubs
+                    </label>
+                    <label>
+                        <input type="checkbox" name="amenity" value="restaurant"> Restaurants
+                    </label>
+                    <label>
+                        <input type="checkbox" name="amenity" value="cafe"> Cafes
+                    </label>
+                    <label>
+                        <input type="checkbox" name="amenity" value="bar"> Bars
+                    </label>
+                    <label>
+                        <input type="checkbox" name="amenity" value="fast_food"> Fast Food
+                    </label>
+                    <button type="submit" class="btn btn-primary btn-sm mt-2">Apply Filters</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Marker -->
+<div class="container text-center my-3">
+    <button id="toggle-marker-mode" class="btn btn-primary">Enable Add Marker Mode</button>
+    <p id="marker-mode-status" class="text-muted mt-2">Marker mode is <strong>disabled</strong></p>
+</div>
+
+<!-- Search -->
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8">
+            <form id="search-form" class="d-flex">
+                <input type="text" id="search-query" class="form-control me-2" placeholder="Search for an amenity by name">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
 
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
@@ -55,87 +113,9 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="{% static 'js/mapScript.js' %}"></script>
 
-<script id="amenities-data" type="application/json">
-    {{ amenities|json_script:"amenities_data" }}
-</script>
 <script>
-    var map;
-    var marker = null, circle = null;
-
-    var irelandBounds = [[51.3, -10.5], [55.5, -5.5]]; 
-
-    map = L.map('map', {
-        center: [53.0, -8.0],
-        zoom: 7, 
-        maxBounds: irelandBounds, 
-        maxBoundsViscosity: 1.0 
-    });
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 18, 
-        minZoom: 6 
-    }).addTo(map);
-
-    var markers = L.markerClusterGroup({
-        disableClusteringAtZoom: 17 
-    });
-
-    var amenities = {{ amenities|safe }};  
-
-    const redIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-        shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-        iconSize: [25, 41], 
-        iconAnchor: [12, 41], 
-        popupAnchor: [1, -34], 
-        shadowSize: [41, 41] 
-    });
-
-    const greenIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-        shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-    });
-
-    const blueIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png',
-        shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-    });
-
-    amenities.forEach(function(amenity) {
-        let icon;
-        if (amenity.amenity === 'pub') {
-            icon = redIcon; 
-        } else if (amenity.amenity === 'restaurant') {
-            icon = blueIcon; 
-        } else if (amenity.amenity === 'cafe') {
-            icon = greenIcon; 
-        } else {
-            icon = L.icon({
-                iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-                shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            }); 
-        }
-        var amenityMarker = L.marker([amenity.latitude, amenity.longitude], { icon: icon });
-        amenityMarker.bindPopup('<b>' + amenity.name + '</b><br>' + amenity.amenity);
-        markers.addLayer(amenityMarker); 
-    });
-
-    map.addLayer(markers);
-
     function updateMap(latitude, longitude, accuracy) {
         if (marker) map.removeLayer(marker);
         if (circle) map.removeLayer(circle);
@@ -178,9 +158,6 @@
             console.error('Geolocation is not supported by this browser.');
         }
     }
-
-    document.addEventListener("DOMContentLoaded", function () {
-        console.log("Map initialized.");
-    });
 </script>
 {% endblock %}
+

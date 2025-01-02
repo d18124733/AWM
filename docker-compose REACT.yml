@@ -1,0 +1,64 @@
+# variant of other docker-compose which includes react app
+
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./React/my-app/build:/usr/share/nginx/html 
+    depends_on:
+      - app
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    ports:
+      - "20080:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: d18124733@mytudublin.ie
+      PGADMIN_DEFAULT_PASSWORD: mypassword
+    volumes:
+      - ./pgadmin:/var/lib/pgadmin
+    depends_on:
+      - postgis
+
+  postgis:
+    image: postgis/postgis
+    container_name: postgis
+    environment:
+      POSTGRES_USER: docker
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: gis
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d gis -U docker"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 5s
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: ./app
+    container_name: app
+    command: uwsgi --ini /app/uwsgi.ini
+    volumes:
+      - ./app:/app
+    depends_on:
+      postgis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./React/my-app  
+      dockerfile: Dockerfile     
+    container_name: frontend
+    command: npm run build        
+    volumes:
+      - ./React/my-app:/React/my-app
+

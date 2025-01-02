@@ -47,7 +47,7 @@ class Profile(models.Model):
     
 
 class Place(models.Model):
-    amenity = models.CharField(max_length=255)
+    amenity = models.CharField(max_length=255, db_index=True)
     name = models.CharField(max_length=255)
     geom = models.PointField(srid=4326)
 

@@ -18,8 +18,14 @@ from django.urls import path, include
 from django.views.generic.base import RedirectView
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('api/admin/', admin.site.urls),
     #path('', include('map.urls')),
     path('', RedirectView.as_view(url='/login/', permanent=False)),  
     path('', include('world.urls')),
+    path('', include('pwa.urls')), # lab7 
+    #path('', include('webmap.urls')), # lab7 
+    #path('', include('lab7.urls')), # lab 7
+    path("api/v1/", include('lab7.urls')), # lab 7
+    path('', include('lab9.urls')), # lesson 9 lab 9
+    #path('frontend/', include('gis_frontend.urls')),
 ]

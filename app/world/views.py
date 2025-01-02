@@ -24,8 +24,7 @@ def map_view(request):
     else:
         return render(request, 'login.html')
 
-
-#login & logout views
+# Django login view
 def login_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
@@ -37,10 +36,29 @@ def login_view(request):
         form = AuthenticationForm()
     return render(request, 'login.html', {'form': form})
 
+# React login api
+def login_api(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return JsonResponse({'success': True, 'message': 'Login successful', 'username': user.username})
+        else:
+            errors = form.errors.as_json()
+            return JsonResponse({'success': False, 'message': 'Login failed', 'errors': errors}, status=400)
+    return JsonResponse({'success': False, 'message': 'Only POST requests are allowed'}, status=405)
 
+# Django login view
 def logout_view(request):
     logout(request)
     return redirect('login')
+
+
+# React logout api
+def logout_api(request):
+    logout(request)
+    return JsonResponse({'success': True, 'message': 'Logout successful'})
 
 
 def update_location(request):   
@@ -53,7 +71,7 @@ def update_location(request):
         return JsonResponse({'success': True})
     return JsonResponse({'success': False})
 
-
+# Django signup view
 def signup_view(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
@@ -68,6 +86,22 @@ def signup_view(request):
     else:
         form = SignUpForm()
     return render(request, 'signup.html', {'form': form})
+
+# React signup api
+def signup_api(request):
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            UserProfile.objects.create(user=user)
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password1')
+            user = authenticate(username=username, password=password)
+            login(request, user)
+            return JsonResponse({'success': True, 'message': 'Signup successful', 'username': username}) 
+    else:
+        errors = form.errors.as_json()
+    return JsonResponse({'success': False, 'message': 'Signup Failed'}, status=400)
 
 
 def amenities_view(request):
@@ -85,3 +119,25 @@ def amenities_view(request):
     return render(request, 'map.html', {'amenities': json.dumps(amenities)})
 
 
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
+
+# React CSRF token access
+def csrf(request):
+    return JsonResponse({'csrfToken': get_token(request)})
+
+
+# Django rest framework filtering
+from rest_framework_gis.filters import InBBoxFilter
+from rest_framework.viewsets import ModelViewSet
+from .models import Place
+from .serializers import PlaceSerializer
+from .filters import PlaceFilter
+from django_filters import rest_framework as filters
+
+class PlaceViewSet(ModelViewSet):
+    queryset = Place.objects.all()
+    serializer_class = PlaceSerializer
+    filterset_class = PlaceFilter
+    filter_backends = [filters.DjangoFilterBackend, InBBoxFilter]  
+    bbox_filter_field = 'geom'

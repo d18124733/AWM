@@ -1,0 +1,23 @@
+{% load leaflet_tags %}
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    {% leaflet_js %}
+    {% leaflet_css %}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>REST Client Frontend</title>
+</head>
+<body>
+    <div id="map">
+        <h1>REST Client Frontend</h1>
+        <div id="data-container">
+        </div>
+    </div>
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>

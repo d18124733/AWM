@@ -28,7 +28,7 @@ except FileNotFoundError:
     raise Exception("Secret key missing. Please include secret key in base directory.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+#DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -44,30 +44,33 @@ INSTALLED_APPS = [
     'world',
     'map',
     'django.contrib.gis',
-    #'crispy_forms',
-    #'leaflet'
+    'lab7', 
+    'rest_framework', 
+    'leaflet',
+    'pwa',
+    'lab9',
+    'corsheaders',
+    'gis_frontend',
 ]
 
-#CRISPY_TEMPLATE_PACK = 'bootstrap4'
+LEAFLET_CONFIG = {
+    "DEFAULT_CENTER": (13.3888599, 52.5170365), 
+    "DEFAULT_ZOOM": 16,
+    "MIN_ZOOM": 3,
+    "MAX_ZOOM": 20,
+    "DEFAULT_PRECISION": 6,
+    "SCALE": "both",
+    "ATTRIBUTION_PREFIX": "powered by <Your corporate name>",
+}
 
-#CRISPY_FAIL_SILENTLY = not DEBUG
-
-#LEAFLET_CONFIG = {
-#         'DEFAULT_CENTER': (53.0, -8.0),
-#         'DEFAULT_ZOOM': 6,
-#         'MIN_ZOOM': 3,
-#         'MAX_ZOOM': 18,
-#         'RESET_VIEW': False,
-#         'SCALE': None,
-#         'OPACITY': 0.5,
-#        }
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -127,6 +130,7 @@ if socket.gethostname() != "HPLaptop":
     }
 else:
     GDAL_LIBRARY_PATH = r'C:\Users\dfega\miniconda3\envs\awm_env\Library\bin\gdal.dll'
+    os.environ['PROJ_LIB'] = r'C:\Users\dfega\miniconda3\envs\awm_env\Library\share\proj'
     DATABASES = {
         'default': {
             'ENGINE': 'django.contrib.gis.db.backends.postgis',
@@ -141,6 +145,7 @@ else:
 #STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 
 # Password validation
@@ -177,7 +182,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -186,18 +191,104 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Set DEPLOY_SECURE to True only for LIVE deployment
 if socket.gethostname() == "HPLaptop":
+    print("HELLO")
     DATABASES["default"]["HOST"] = "localhost"
     #DATABASES["default"]["PORT"] = 5432
     DEBUG = True
     TEMPLATES[0]["OPTIONS"]["debug"] = True
-    ALLOWED_HOSTS = ['*', ]
+    ALLOWED_HOSTS = ['*']
     CSRF_COOKIE_SECURE = False
     SESSION_COOKIE_SECURE = False
 else:
+    print("NOT")
     DATABASES["default"]["HOST"] = "postgis"
     #DATABASES["default"]["PORT"] = 5432
     DEBUG = False
     TEMPLATES[0]["OPTIONS"]["debug"] = False
-    ALLOWED_HOSTS = ['.dfegan.xyz', 'localhost', 'dfegan.xyz']
+    ALLOWED_HOSTS = ['.dfegan.xyz', 'localhost', 'dfegan.xyz', 'localhost:3000']
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
+
+
+# Configure PWA settings
+PWA_APP_NAME = 'WebMap'
+PWA_APP_DESCRIPTION = "A Progressive Web Application for WebMap"
+PWA_APP_THEME_COLOR = '#000000'
+PWA_APP_BACKGROUND_COLOR = '#ffffff'
+PWA_APP_DISPLAY = 'standalone'
+PWA_APP_SCOPE = '/'
+PWA_APP_START_URL = '/'
+PWA_APP_ICONS = [
+    {
+        'src': '/static/images/pwa-icon.png',
+        'sizes': '72x72',
+    },
+    {
+        'src': '/static/images/pwa-icon.png',
+        'sizes': '152x152',
+    },
+    {
+        'src': '/static/images/pwa-icon.png',
+        'sizes': '1920x1080',
+    },
+]
+PWA_APP_ICONS_APPLE = [
+    {
+        'src': '/static/images/pwa-icon.png',
+        'sizes': '152x152',
+    },
+]
+PWA_APP_SPLASH_SCREEN = [
+    {
+        'src': '/static/images/pwa-icon.png',
+        'media': '(device-width: 320px) and (device-height: 568px)',
+    },
+    {
+        'src': '/static/images/pwa-icon.png',
+        'media': '(device-width: 1920px) and (device-height: 1080px)',
+    },
+]
+PWA_APP_DIR = 'ltr'
+PWA_APP_LANG = 'en-US'
+
+from corsheaders.defaults import default_headers
+
+CORS_ALLOW_CREDENTIALS = True 
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_WHITELIST = [
+    'http://localhost/',
+    'http://localhost:80',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://127.0.0.1:3000/',
+    'http://localhost:3000/',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost/',  
+    'http://localhost:80',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://127.0.0.1:3000/',
+    'http://localhost:3000/',
+]
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost/',  
+    'http://localhost:80',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://127.0.0.1:3000/',
+    'http://localhost:3000/',
+]
+
+CORS_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SECURE = False
+
+import logging
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
